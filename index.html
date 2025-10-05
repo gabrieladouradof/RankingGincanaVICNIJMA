@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking da Gincana VICNIJMA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo da Página */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 25px 40px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #4a4a8c;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #4a4a8c;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f8fa;
+        }
+        tr:hover {
+            background-color: #efeff6;
+        }
+        #last-updated {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+        }
+        /* Estilo para o pódio (Top 3) */
+        tbody tr:nth-child(1) td:first-child::before { content: '🥇 '; }
+        tbody tr:nth-child(2) td:first-child::before { content: '🥈 '; }
+        tbody tr:nth-child(3) td:first-child::before { content: '🥉 '; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ranking da Gincana VICNIJMA</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Escola</th>
+                    <th>Pontuação</th>
+                </tr>
+            </thead>
+            <tbody id="ranking-body">
+                </tbody>
+        </table>
+        <p id="last-updated">Carregando ranking...</p>
+    </div>
+
+    <script>0
+        // --- O PONTO CRÍTICO ESTÁ AQUI ---
+        // Substitua a URL abaixo pela URL .CSV gerada pela sua planilha
+        const csvUrl2 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmri-L-UoS94JJiwdSM5QYefuYFuh0tStoVg2763UmLMDxRT359fbW4osvd9rtARm-8a1hdaWkx8Mv/pub?gid=2050269773&single=true&output=csv';
+        const csvUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl2)}`;
+
+        async function fetchAndDisplayRanking() {
+            const tableBody = document.getElementById('ranking-body');
+            try {
+                const response = await fetch(`${csvUrl}&_=${new Date().getTime()}`); // Adicionado para evitar cache
+                if (!response.ok) {
+                    throw new Error(`Erro na rede: ${response.statusText}`);
+                }
+                const data = await response.text();
+                
+                // Limpa a tabela antes de adicionar os novos dados
+                tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+
+                // Divide o CSV em linhas, ignorando o cabeçalho (slice(1))
+                const rows = data.trim().split('\n').slice(1);
+
+                if (rows.length === 0 || (rows.length === 1 && rows[0] === '')) {
+                     tableBody.innerHTML = '<tr><td colspan="3">Ainda não há dados no ranking.</td></tr>';
+                     return;
+                }
+
+                tableBody.innerHTML = ''; // Limpa a mensagem de "Carregando"
+
+                rows.forEach((row, index) => {
+                    const columns = row.split(',');
+                    const school = columns[0];
+                    const score = columns[1];
+                    const position = index + 1;
+
+                    const tableRow = document.createElement('tr');
+                    tableRow.innerHTML = `
+                        <td>${position}º</td>
+                        <td>${school}</td>
+                        <td>${score}</td>
+                    `;
+                    tableBody.appendChild(tableRow);
+                });
+
+            } catch (error) {
+                console.error('Falha ao buscar ranking:', error);
+                tableBody.innerHTML = '<tr><td colspan="3">Não foi possível carregar o ranking.</td></tr>';
+            } finally {
+                const now = new Date();
+                document.getElementById('last-updated').textContent = `Atualizado em: ${now.toLocaleDateString()} às ${now.toLocaleTimeString()}`;
+            }
+        }
+
+        // Primeira chamada ao carregar a página
+        fetchAndDisplayRanking();
+
+        // Define o intervalo para auto-atualização (a cada 60 segundos)
+        setInterval(fetchAndDisplayRanking, 60000);
+    </script>
+</body>
+</html>
