@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking da Gincana VICNIJMA</title>
+    <title>Ranking da Gincana VI CNIJMA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
         }
         h1 {
             text-align: center;
-            color: #4a4a8c;
+            color: #36d65e;
             margin-bottom: 25px;
         }
         table {
@@ -45,7 +45,7 @@
             text-align: left;
         }
         th {
-            background-color: #4a4a8c;
+            background-color: #1aca46;
             color: white;
             font-weight: 600;
         }
@@ -69,12 +69,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Ranking da Gincana VICNIJMA</h1>
+        <h1>Ranking da Gincana VI CNIJMA</h1>
         <table>
             <thead>
                 <tr>
                     <th>Posição</th>
-                    <th>Escola</th>
+                    <th>Estado</th>
                     <th>Pontuação</th>
                 </tr>
             </thead>
@@ -114,14 +114,14 @@
 
                 rows.forEach((row, index) => {
                     const columns = row.split(',');
-                    const school = columns[0];
+                    const estado = columns[0];
                     const score = columns[1];
                     const position = index + 1;
 
                     const tableRow = document.createElement('tr');
                     tableRow.innerHTML = `
                         <td>${position}º</td>
-                        <td>${school}</td>
+                        <td>${estado}</td>
                         <td>${score}</td>
                     `;
                     tableBody.appendChild(tableRow);
