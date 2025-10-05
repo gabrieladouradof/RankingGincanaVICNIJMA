@@ -84,62 +84,63 @@
         <p id="last-updated">Carregando ranking...</p>
     </div>
 
-    <script>0
+    <script>
     
-        const csvUrl2 = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmri-L-UoS94JJiwdSM5QYefuYFuh0tStoVg2763UmLMDxRT359fbW4osvd9rtARm-8a1hdaWkx8Mv/pub?gid=2050269773&single=true&output=csv';
-        const csvUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl2)}`;
+    //
+    const csvUrlBase = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmri-L-UoS94JJiwdSM5QYefuYFuh0tStoVg2763UmLMDxRT359fbW4osvd9rtARm-8a1hdaWkx8Mv/pub?gid=1102516337&single=true&output=csv';
 
-        async function fetchAndDisplayRanking() {
-            const tableBody = document.getElementById('ranking-body');
-            try {
-                const response = await fetch(`${csvUrl}&_=${new Date().getTime()}`); // Adicionado para evitar cache
-                if (!response.ok) {
-                    throw new Error(`Erro na rede: ${response.statusText}`);
-                }
-                const data = await response.text();
-                
-                // Limpa a tabela antes de adicionar os novos dados
-                tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+    async function fetchAndDisplayRanking() {
+        const tableBody = document.getElementById('ranking-body');
+        try {
+            const urlComCacheBuster = `${csvUrlBase}&t=${new Date().getTime()}`;
+            const urlProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(urlComCacheBuster)}`;
 
-                // Divide o CSV em linhas, ignorando o cabeçalho (slice(1))
-                const rows = data.trim().split('\n').slice(1);
+            const response = await fetch(urlProxy);
+            if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
+            
+            const data = await response.text();
+            const rows = data.trim().split('\n').slice(1);
 
-                if (rows.length === 0 || (rows.length === 1 && rows[0] === '')) {
-                     tableBody.innerHTML = '<tr><td colspan="3">Ainda não há dados no ranking.</td></tr>';
-                     return;
-                }
-
-                tableBody.innerHTML = ''; // Limpa a mensagem de "Carregando"
-
-                rows.forEach((row, index) => {
-                    const columns = row.split(',');
-                    const estado = columns[0];
-                    const score = columns[1];
-                    const position = index + 1;
-
-                    const tableRow = document.createElement('tr');
-                    tableRow.innerHTML = `
-                        <td>${position}º</td>
-                        <td>${estado}</td>
-                        <td>${score}</td>
-                    `;
-                    tableBody.appendChild(tableRow);
-                });
-
-            } catch (error) {
-                console.error('Falha ao buscar ranking:', error);
-                tableBody.innerHTML = '<tr><td colspan="3">Não foi possível carregar o ranking.</td></tr>';
-            } finally {
-                const now = new Date();
-                document.getElementById('last-updated').textContent = `Atualizado em: ${now.toLocaleDateString()} às ${now.toLocaleTimeString()}`;
+            if (rows.length === 0 || (rows.length === 1 && rows[0] === '')) {
+                tableBody.innerHTML = '<tr><td colspan="3">Ainda não há dados no ranking.</td></tr>';
+                return;
             }
+
+            const rankingData = rows.map(row => {
+                const columns = row.split(',');
+                return {
+                    estado: columns[0] ? columns[0].trim() : '',
+                    score: parseInt(columns[1] ? columns[1].trim() : 0, 10)
+                };
+            }).filter(item => item.estado);
+
+            // Apenas ordena os dados que já vieram prontos da planilha.
+            rankingData.sort((a, b) => b.score - a.score);
+            
+            tableBody.innerHTML = ''; 
+
+            rankingData.forEach((item, index) => {
+                const position = index + 1;
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `
+                    <td>${position}º</td>
+                    <td>${item.estado}</td> 
+                    <td>${item.score}</td>
+                `;
+                tableBody.appendChild(tableRow);
+            });
+
+        } catch (error) {
+            console.error('Falha ao buscar ranking:', error);
+            tableBody.innerHTML = `<tr><td colspan="3">Não foi possível carregar o ranking. Verifique a URL.</td></tr>`;
+        } finally {
+            const now = new Date();
+            document.getElementById('last-updated').textContent = `Atualizado em: ${now.toLocaleDateString()} às ${now.toLocaleTimeString()}`;
         }
+    }
 
-        // Primeira chamada ao carregar a página
-        fetchAndDisplayRanking();
-
-        // Define o intervalo para auto-atualização (a cada 60 segundos)
-        setInterval(fetchAndDisplayRanking, 60000);
-    </script>
+    fetchAndDisplayRanking();
+    setInterval(fetchAndDisplayRanking, 60000);
+</script>
 </body>
 </html>
